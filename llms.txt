@@ -1,0 +1,22 @@
+# Meta-SaaS Feature Hub
+
+> Language-agnostic HTTP contracts and agent prompts for adding Meta-SaaS capabilities to an
+> app deployed on the platform. The app's own coding agent reads a capability's `prompt.md`
+> (the task) and `contract.md` (the full HTTP reference) and wires the calls in whatever
+> language and framework the app uses. No SDK, no vendor keys, no webhooks in the app — the
+> platform runs the hard parts and brokers everything sensitive.
+
+Read `deploy/` FIRST: an app must be a long-lived HTTP server on `0.0.0.0:$PORT` before any
+capability works, and auth/payments are server-only (a static/SPA app needs a backend added).
+
+## Capabilities
+
+- [Deploy compatibility](deploy/contract.md): the rules an app must meet so the platform can build and run it — Dockerfile at root, long-lived server on `0.0.0.0:$PORT`, config from env, `DATABASE_URL` for the managed database. [prompt](deploy/prompt.md)
+- [Payments](payments/contract.md): sell one-time products and subscriptions; the platform brokers Stripe, holds the keys and webhooks, and owns the "paid" state — the app only calls `GET /paid`, `GET /products`, `POST /checkout`, `POST /portal`. [prompt](payments/prompt.md)
+- [User accounts / auth](auth/contract.md): sign up, log in, password reset; the platform runs the auth service inside the app's own container group — the app calls `POST /signup`, `POST /token`, `POST /recover`, `GET /user`. [prompt](auth/prompt.md)
+
+## Conventions
+
+- Each capability is a folder with `contract.md` (exact HTTP: methods, headers, request/response JSON, errors, curl) and `prompt.md` (a paste-ready task for the app's agent).
+- Every contract carries a `Changelog`; when an endpoint changes, the agent re-reads the file.
+- `_template/` is the shape a new capability follows.
