@@ -64,8 +64,9 @@ curl -sX POST "$META_AUTH_URL/token?grant_type=refresh_token" \
 There is **no** token-introspection endpoint. To check an incoming
 `Authorization: Bearer <access_token>`, replay it against `/user`:
 
-- `200` → the token is valid; the body is the user. Use `user.id` as the owner of the
-  app's own rows.
+- `200` → the token is valid; the body is the user. Read the field named `id` (a stable UUID) —
+  it is `id`, not `sub` — and use it as the owner of the app's own rows:
+  `{ "id": "<uuid>", "email": "user@example.com", "role": "authenticated", ... }`.
 - **Any other status → reject.** An invalid token answers **`403`**, not `401`, so never
   test for `401` specifically.
 

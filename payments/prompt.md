@@ -64,7 +64,10 @@ B) CONSUMABLE value that STACKS — credits, coins, gold, extra lives (buying tw
           if that INSERT created a new row -> credit the user. Decide HOW MUCH from
              p.productKey, NOT from p.amount. p.amount is the MONEY paid, in cents — it is
              NOT your unit count; crediting it gives hundreds of units for one small pack.
-             Map the KEY to the units you sell: e.g. credits_10 -> +10 credits, gold_large -> +1000 gold.
+             YOU decide how many units each product grants — keep your OWN lookup keyed by
+             productKey (e.g. { "credits_10": 10, "starter_pack": 500 } in your code). We only
+             tell you WHICH product was bought; the grant is your logic. Do NOT parse a number
+             out of the key name — a key like "starter_pack" has no number to read.
           otherwise -> already granted, skip
    The PRIMARY KEY is what makes it exactly-once — not your logic. Poll /purchases after the
    buyer returns from checkout and/or on a light interval; there's no push and no rush (a

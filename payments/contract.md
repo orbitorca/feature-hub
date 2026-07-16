@@ -85,8 +85,9 @@ CREATE TABLE granted_purchases (id TEXT PRIMARY KEY);   -- once, at setup
 for each p in GET /purchases?user=<id>:
     inserted = INSERT INTO granted_purchases (id) VALUES (p.id) ON CONFLICT DO NOTHING
     if inserted:                      # first time we've seen this purchase
-        # decide how much from p.productKey, NOT p.amount (p.amount is the MONEY paid, in cents)
-        credit the user by mapping p.productKey → your units (e.g. gold_large → +1000 gold, credits_10 → +10)
+        # decide how much from p.productKey, NOT p.amount (p.amount is the MONEY paid, in cents).
+        # YOU own the map — keep a lookup { productKey: units } in your app; don't parse the key name.
+        credit the user by mapping p.productKey → your units (e.g. { gold_large: 1000, credits_10: 10 })
     # else: already granted — do nothing
 ```
 
