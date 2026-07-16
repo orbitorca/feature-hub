@@ -74,6 +74,8 @@ B) CONSUMABLE value that STACKS — credits, coins, gold, extra lives (buying tw
     POST $META_API_URL/portal { "user": "..." }  ->  { "url": "..." }  ; link the buyer there.
 
 Notes:
+- Treat ANY 2xx as success. POST /checkout answers 201, so an "=== 200" check reads a
+  SUCCESSFUL checkout (with the url) as a failure. Use response.ok, not an exact status.
 - `user` is YOUR own id for the buyer (email, auth user id, anything). For guest
   checkout, omit it. Use the SAME id everywhere and store it on your own records.
 - Business buyers (NIP/VAT number + invoice) are handled at checkout automatically
