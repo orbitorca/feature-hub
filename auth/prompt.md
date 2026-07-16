@@ -22,7 +22,8 @@ Do NOT hash passwords, do NOT create a users table, do NOT sign or verify JWTs y
 - Log in (note: it is /token with a query param, there is no /login):
     POST /token?grant_type=password   {"email","password"}
       ->  200 { "access_token", "refresh_token", "expires_in" }
-    The access_token EXPIRES (expires_in ~1h). Keep the refresh_token. When a protected call
+    The access_token EXPIRES after ~1h. You MUST implement refresh — skip it and EVERY user is
+    silently logged out an hour after logging in. Keep the refresh_token. When a protected call
     starts returning 403 (the token expired), get a fresh pair:
       POST /token?grant_type=refresh_token   {"refresh_token"}  ->  200 { access_token, refresh_token }
     Store the NEW refresh_token, retry once. If the refresh itself is not 200, the session is
@@ -41,7 +42,10 @@ Do NOT hash passwords, do NOT create a users table, do NOT sign or verify JWTs y
 
 - The emailed link (confirmation AND reset) sends the user to your HOME PAGE with the
   session in the URL FRAGMENT, which never reaches your server:
-      https://your-app.example.com/#access_token=...&type=recovery
+      https://your-app.example.com/#access_token=...&refresh_token=...&type=recovery
+  The fragment fields are named `access_token`, `refresh_token` and `type` — NOT `token`.
+  Read `access_token`; a `token` param does not exist, and reading it makes the emailed link
+  silently do nothing, breaking BOTH confirmation and password reset.
   On page load, parse window.location.hash (strip "#", then URLSearchParams):
     type=signup    -> address confirmed; store the session and log the user in.
     type=recovery  -> show a "set a new password" form, then

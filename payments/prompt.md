@@ -61,8 +61,10 @@ B) CONSUMABLE value that STACKS — credits, coins, gold, extra lives (buying tw
      1) once, create a table:   granted_purchases(id PRIMARY KEY)
      2) for each purchase p returned:
           INSERT INTO granted_purchases(id) VALUES (p.id) ON CONFLICT DO NOTHING
-          if that INSERT created a new row -> credit the user
-             (map p.productKey to an amount, e.g. gold_large -> +1000 gold)
+          if that INSERT created a new row -> credit the user. Decide HOW MUCH from
+             p.productKey, NOT from p.amount. p.amount is the MONEY paid, in cents — it is
+             NOT your unit count; crediting it gives hundreds of units for one small pack.
+             Map the KEY to the units you sell: e.g. credits_10 -> +10 credits, gold_large -> +1000 gold.
           otherwise -> already granted, skip
    The PRIMARY KEY is what makes it exactly-once — not your logic. Poll /purchases after the
    buyer returns from checkout and/or on a light interval; there's no push and no rush (a
