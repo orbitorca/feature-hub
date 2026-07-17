@@ -31,6 +31,11 @@ This app deploys as ONE Docker container on a hosting platform. Make it comply:
   database" and the app crash-loops). If accounts are enabled, an `auth` schema appears
   and is read-only to you — keep your tables in `public`, link by the auth user.id.
 
+- The container disk is EPHEMERAL — every deploy/restart starts from a clean image and
+  local writes are lost. Persist everything that matters in the database (DATABASE_URL):
+  no user uploads, SQLite or data files on disk. /tmp scratch during a process's life is
+  fine.
+
 - The `/__meta/*` path prefix on your domain is reserved by the platform — do not add
   routes under it.
 ```

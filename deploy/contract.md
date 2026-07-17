@@ -33,11 +33,17 @@ Everything the platform needs to build and run your app — for ANY language or 
   You have full rights **inside `public`** (create tables/indexes, read/write) — run your own migrations there, idempotently, on startup.
 - If end-user accounts (auth) are enabled, an **`auth` schema** also appears in your database; it is the platform's and you get read-only (`SELECT`) on it. Keep your own tables in `public`; link a row to a user by the auth `user.id`.
 
-## 5. Reserved
+## 5. Disk is ephemeral — persist in the database
+
+- The container filesystem is **scratch space**: every deploy/restart starts from a clean image, and anything written locally is gone. This is by design — the app is **stateless**.
+- Anything that must survive goes in your **database** (`DATABASE_URL`): user uploads, application state, records. Do NOT keep data in local files or SQLite — it silently disappears on the next deploy.
+- Writing to `/tmp`/caches during the process's life is fine; just never treat the disk as storage.
+
+## 6. Reserved
 
 - The **`/__meta/*`** path prefix on your app's domain is the platform's — served before your app sees the request. Do NOT define routes under it.
 
-## 6. Health (optional)
+## 7. Health (optional)
 
 - If you expose `GET /healthz` → `200`, the platform uses it; otherwise it TCP-checks `:8080`.
 
@@ -48,5 +54,6 @@ Everything the platform needs to build and run your app — for ANY language or 
 - [ ] Listens on `0.0.0.0` and `process.env.PORT` (8080).
 - [ ] Using auth or payments? → the app HAS a server, and those calls run server-side.
 - [ ] Has a database? → connects via `DATABASE_URL`; tables created with `CREATE TABLE ... public.*` — **never `CREATE SCHEMA`**.
+- [ ] Persistent data lives in the database — nothing important written to local files/SQLite (disk is wiped on every deploy).
 - [ ] No secrets committed; every `META_*` used server-side only.
 - [ ] No routes under `/__meta/*`.
