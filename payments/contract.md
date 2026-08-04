@@ -22,8 +22,8 @@ Pick by the thing you sell, not by how you built the app.
 The catalog the owner configured — call this to render pricing **dynamically**; the app
 never hardcodes prices. Returns active products, each with its prices.
 
-- Response: `{ "products": [ { "key": "pro", "name": "Pro", "kind": "one_time"|"subscription", "prices": [ { "id": "<price-id>", "amount": 1999, "currency": "usd", "interval": "month"|"year"|null, "trialDays": 14|null, "tier": "pro"|null } ] } ] }`
-- Use a price `id` as the `price` in `POST /checkout`.
+- Response: `{ "products": [ { "key": "pro", "name": "Pro", "kind": "one_time"|"subscription", "prices": [ { "key": "<price-key>", "amount": 1999, "currency": "usd", "interval": "month"|"year"|null, "trialDays": 14|null, "tier": "pro"|null } ] } ] }`
+- Use a price `key` as the `price` in `POST /checkout`. It's stable across owner edits, so it's safe to keep in your code.
 
 ```bash
 curl -s "$META_API_URL/products" -H "Authorization: Bearer $META_APP_TOKEN"
@@ -32,7 +32,7 @@ curl -s "$META_API_URL/products" -H "Authorization: Bearer $META_APP_TOKEN"
 ## POST /checkout
 Start a Stripe-hosted checkout and get a redirect URL.
 
-- Body: `{ "price": "<price-id from GET /products>", "user": "<buyer-id, optional>" }`
+- Body: `{ "price": "<price-key from GET /products>", "user": "<buyer-id, optional>" }`
 - Headers: `Idempotency-Key: <uuid>` (retry-safe — a repeat key returns the same session).
 - Response: `{ "url": "https://checkout.stripe.com/…" }` → redirect the buyer.
 - `user` = the app's own buyer id (email / auth id / guest token). Omit for guest checkout.
@@ -40,12 +40,12 @@ Start a Stripe-hosted checkout and get a redirect URL.
 - The buyer's return URLs are set by the platform (your app's own domain) — you send nothing.
 
 ```bash
-# price = a price "id" from GET /products (not the product key)
+# price = a price "key" from GET /products (a price key, NOT the product key)
 curl -sX POST "$META_API_URL/checkout" \
   -H "Authorization: Bearer $META_APP_TOKEN" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
-  -d '{"price":"5f5b1c9e-…-price-id","user":"user_123"}'
+  -d '{"price":"pro-9f2a1c3d","user":"user_123"}'
 ```
 
 ## GET /paid
@@ -134,4 +134,4 @@ Same query as `/paid`, but a richer read for showing status text — never for g
 - _unreleased_ — `GET /products`, `POST /checkout` (one-off + subscription,
   Idempotency-Key, B2B), `GET /paid` (durable gate), `GET /purchases` (consumables ledger,
   exactly-once via a caller-side insert-if-new table), `POST /portal`, `GET /entitlement`
-  (display-only). `/checkout` takes a price **id**; return URLs are platform-set.
+  (display-only). `/checkout` takes a price **key** (stable across owner edits); return URLs are platform-set.

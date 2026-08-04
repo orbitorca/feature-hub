@@ -15,16 +15,15 @@ the platform handles all of that.
 
 - See what's for sale (the owner configures products/prices dynamically):
     GET $META_API_URL/products
-      -> { "products": [ { "key", "name", "kind", "prices": [ { "id", "amount", "currency", "interval", "tier" } ] } ] }
-    Build your pricing page from this; pass a price "id" as "price" in /checkout below.
-    NEVER hardcode a price id or product key — read them LIVE from /products every time, on
-    EVERY purchase path (one-off buttons AND the subscribe button alike). Any id you saw in
-    an example, a catalog snapshot, or a previous run is reference-only and will NOT match at
-    runtime — a hardcoded id makes /checkout fail with "Invalid UUID". One code path: fetch
-    /products, find the product/price you want by its KEY, use that price's live id.
+      -> { "products": [ { "key", "name", "kind", "prices": [ { "key", "amount", "currency", "interval", "tier" } ] } ] }
+    Build your pricing page from this; pass a price "key" as "price" in /checkout below.
+    Read products LIVE from /products, on EVERY purchase path (one-off buttons AND the
+    subscribe button alike) — the owner can add or remove products/prices at any time. The
+    price "key" is stable across owner price edits, so a checkout the owner re-prices keeps
+    working. One code path: fetch /products, find the product/price you want by its KEY.
 
 - Sell something (server-side):
-    POST $META_API_URL/checkout   { "price": "<live price-id from /products>", "user": "<your-user-id>" }
+    POST $META_API_URL/checkout   { "price": "<price key from /products>", "user": "<your-user-id>" }
     (send an Idempotency-Key header)  ->  { "url": "..." }
     Redirect the buyer to that url (Stripe-hosted checkout).
 
@@ -35,7 +34,7 @@ A) DURABLE access — a subscription/plan, or a one-off product they then own.
      GET $META_API_URL/paid?user=<your-user-id>&product=<product-KEY>  ->  { "paid": true|false, ... }
    Only serve the paid feature when paid == true. ALWAYS pass product=<KEY>; without it
    /paid means "paid for ANYTHING", so a cheap one-off could unlock a subscription feature.
-   Gate on the product KEY, never a price id.
+   Gate on the product KEY, never a price key.
    Server-authoritative means the browser must not be able to reach the paid content on
    its own: do NOT ship the premium code/data to the client and merely hide it in JS —
    withhold it on the server until /paid is true. We compute expiry/renewal/cancellation
