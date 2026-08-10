@@ -1,6 +1,6 @@
-# Meta-SaaS Feature Hub
+# OrbitOrca Feature Hub
 
-> Language-agnostic HTTP contracts and agent prompts for adding Meta-SaaS capabilities to an
+> Language-agnostic HTTP contracts and agent prompts for adding OrbitOrca capabilities to an
 > app deployed on the platform. The app's own coding agent reads a capability's `prompt.md`
 > (the task) and `contract.md` (the full HTTP reference) and wires the calls in whatever
 > language and framework the app uses. No SDK, no vendor keys, no webhooks in the app — the

@@ -1,6 +1,6 @@
-# Meta-SaaS Feature Hub
+# OrbitOrca Feature Hub
 
-Language-agnostic HTTP contracts + agent prompts for adding Meta-SaaS features
+Language-agnostic HTTP contracts + agent prompts for adding OrbitOrca features
 (payments and auth now; email / files later) to an app. The app's OWN coding agent
 (Cursor, Bolt, Lovable, Claude Code, …) reads a feature's `prompt.md` + `contract.md`
 and wires the calls in whatever language/framework the app uses. No SDK, no vendor keys,
@@ -10,7 +10,7 @@ no webhooks in the app — the platform runs the hard parts.
 Before wiring ANY feature, make the app deployable — read [`deploy/contract.md`](deploy/contract.md). It is language- and framework-agnostic and covers the things every app gets wrong: it must be a long-lived HTTP server on `0.0.0.0:$PORT`; **auth and payments are server-only, so a static/SPA app needs a backend added**; and the database rules (`public` already exists → `CREATE TABLE`, never `CREATE SCHEMA`). Skipping this is the #1 cause of a deploy that crash-loops.
 
 ## How it works
-1. The owner enables a feature in the Meta-SaaS dashboard.
+1. The owner enables a feature in the OrbitOrca dashboard.
 2. The platform injects the feature's env vars into the app and redeploys it.
 3. The agent reads this hub — [`deploy/`](deploy/) first, then the feature — and wires the HTTP calls.
 
@@ -55,5 +55,5 @@ the app's own database.
 - (later) `email/`, `files/`, …
 
 ---
-Standalone repo (git remote wired later). Commits: English, one-line Conventional
-Commits, no AI/agent trailer — same standard as the rest of Meta-SaaS.
+Commits: English, one-line Conventional Commits, no AI/agent trailer — same standard
+as the rest of OrbitOrca.
