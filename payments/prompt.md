@@ -34,7 +34,11 @@ A) DURABLE access — a subscription/plan, or a one-off product they then own.
      GET $META_API_URL/paid?user=<your-user-id>&product=<product-KEY>  ->  { "paid": true|false, ... }
    Only serve the paid feature when paid == true. ALWAYS pass product=<KEY>; without it
    /paid means "paid for ANYTHING", so a cheap one-off could unlock a subscription feature.
-   Gate on the product KEY, never a price key.
+   Gate on the product KEY, never a price key — and NEVER the `tier` field. `tier` is an optional
+   display label the owner may leave empty (null); gating on it silently locks out paying customers.
+   To know WHICH plan a user is on (Basic vs Pro …), call /paid per product KEY from the highest
+   plan down — the first that returns paid == true is their plan. A subscription with no tier is a
+   normal paid subscription and unlocks its plan exactly the same way.
    Server-authoritative means the browser must not be able to reach the paid content on
    its own: do NOT ship the premium code/data to the client and merely hide it in JS —
    withhold it on the server until /paid is true. We compute expiry/renewal/cancellation
