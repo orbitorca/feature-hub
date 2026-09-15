@@ -29,6 +29,13 @@ Do NOT hash passwords, do NOT create a users table, do NOT sign or verify JWTs y
     Store the NEW refresh_token, retry once. If the refresh itself is not 200, the session is
     over — clear the stored tokens and send the user back to log in. Don't leave them stuck.
 
+- Password rules (the service enforces them on /signup and every password change):
+    at least 8 characters, with a lowercase letter, an uppercase letter and a digit;
+    at most 72 characters; passwords known from data leaks (like Password1) are refused.
+    Show the rules next to every password field and check them in the form before sending.
+    A weak password answers 422 with a `weak_password` object: ask for a stronger password
+    and keep the form filled in. Never show it as a generic error.
+
 - Protect a route (ALWAYS on the server):
     GET $META_AUTH_URL/user   with the caller's  Authorization: Bearer <access_token>
       ->  200 = valid; the body is the user.
@@ -65,4 +72,5 @@ Verify before finishing:
   2. POST /token?grant_type=password BEFORE confirming -> not 200.
   3. Click the emailed link -> the home page reads the fragment -> login now returns a token.
   4. A protected route with a garbage token -> your server rejects it.
+  5. Sign up with abc12345 (no uppercase letter) -> 422, and the form tells the user why.
 ```

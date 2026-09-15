@@ -24,6 +24,7 @@ the platform sends that email, the app sends nothing.
 
 - Body: `{ "email": "...", "password": "..." }`
 - Response: `200` with the created user.
+- A password that breaks the [password rules](#password-rules) answers `422`.
 
 ```bash
 curl -sX POST "$META_AUTH_URL/signup" \
@@ -88,6 +89,23 @@ curl -sX PUT "$META_AUTH_URL/user" \
   -d '{"password":"new-password"}'
 ```
 
+## Password rules
+Enforced on `POST /signup` and on every password change (`PUT /user`, including a reset):
+
+- at least 8 characters, with a lowercase letter, an uppercase letter and a digit;
+- at most 72 characters;
+- not a password known from data leaks (for example `Password1`).
+
+A password that breaks a rule answers `422` with a `weak_password` object:
+
+```json
+{ "code": 422, "error_code": "weak_password", "msg": "...",
+  "weak_password": { "reasons": ["characters"] } }
+```
+
+`reasons` lists `length`, `characters` and/or `pwned`. Accounts created before the rules existed
+keep logging in; their login response may carry a `weak_password` field, which is safe to ignore.
+
 ## POST /recover
 Starts a password reset. **Always answers `200`**, even for an address with no account —
 so the app cannot be used to discover which emails are registered. Show the same
@@ -133,6 +151,9 @@ password reset: the user lands on the home page and nothing happens.
   in; login fails until they confirm.
 - **Reset flow:** a form that calls `POST /recover` → the "check your inbox" message →
   the fragment handler above.
+- **Password fields** (sign-up, new password): show the [password rules](#password-rules), check
+  them before sending, and on a `weak_password` `422` ask for a stronger password without clearing
+  the form.
 - **Never** write a `users` table, hash a password, or verify a JWT yourself.
 - The app's database gets a schema named `auth`, owned by the auth service. The app has
   `SELECT` on it (join your rows to `auth.users` by `user_id`) and nothing more. Keep the
@@ -143,6 +164,7 @@ password reset: the user lands on the home page and nothing happens.
 Non-2xx responses carry the auth service's own JSON body. Do **not** branch on its error
 strings — they are not part of any stability promise. Branch on the status code:
 `200` = success, anything else = failure. A bad or expired end-user token gives `403`.
+The exception is `weak_password` on a `422` ([password rules](#password-rules)).
 
 Enabling the feature can fail from the dashboard with
 `{ "error": { "code": "APP_ERROR.APP_AUTH.<CODE>" } }`: `DATABASE_REQUIRED` (the app
@@ -150,6 +172,8 @@ declared no database), `DATABASE_NOT_READY` (deploy the app once first), `NOT_AV
 (the platform environment has no auth image configured).
 
 ## Changelog
+- 2026-09-15: password rules: at least 8 characters with a lowercase letter, an uppercase
+  letter and a digit, no leaked passwords. A weak password answers `422` with `weak_password`.
 - 2026-07-10 — initial contract. `POST /signup`, `POST /token?grant_type=password`,
   `POST /recover`, `GET /user` (validation: `200` = valid, `403` = invalid), `PUT /user`.
   Emailed links redirect to the app root with the session in the URL fragment.
