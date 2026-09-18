@@ -31,7 +31,7 @@ Do NOT hash passwords, do NOT create a users table, do NOT sign or verify JWTs y
 
 - Password rules (the service enforces them on /signup and every password change):
     at least 8 characters, with a lowercase letter, an uppercase letter and a digit;
-    at most 72 characters; passwords known from data leaks (like Password1) are refused.
+    at most 72 characters.
     Show the rules next to every password field and check them in the form before sending.
     A weak password answers 422 with a `weak_password` object: ask for a stronger password
     and keep the form filled in. Never show it as a generic error.

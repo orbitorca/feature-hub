@@ -93,8 +93,7 @@ curl -sX PUT "$META_AUTH_URL/user" \
 Enforced on `POST /signup` and on every password change (`PUT /user`, including a reset):
 
 - at least 8 characters, with a lowercase letter, an uppercase letter and a digit;
-- at most 72 characters;
-- not a password known from data leaks (for example `Password1`).
+- at most 72 characters.
 
 A password that breaks a rule answers `422` with a `weak_password` object:
 
@@ -103,7 +102,7 @@ A password that breaks a rule answers `422` with a `weak_password` object:
   "weak_password": { "reasons": ["characters"] } }
 ```
 
-`reasons` lists `length`, `characters` and/or `pwned`. Accounts created before the rules existed
+`reasons` lists `length` and/or `characters`. Accounts created before the rules existed
 keep logging in; their login response may carry a `weak_password` field, which is safe to ignore.
 
 ## POST /recover
@@ -172,6 +171,8 @@ declared no database), `DATABASE_NOT_READY` (deploy the app once first), `NOT_AV
 (the platform environment has no auth image configured).
 
 ## Changelog
+- 2026-09-18: passwords known from data leaks are no longer refused; `reasons` is `length` and/or
+  `characters`.
 - 2026-09-15: password rules: at least 8 characters with a lowercase letter, an uppercase
   letter and a digit, no leaked passwords. A weak password answers `422` with `weak_password`.
 - 2026-07-10 — initial contract. `POST /signup`, `POST /token?grant_type=password`,
