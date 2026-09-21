@@ -43,9 +43,14 @@ Everything the platform needs to build and run your app — for ANY language or 
 
 - The **`/__meta/*`** path prefix on your app's domain is the platform's — served before your app sees the request. Do NOT define routes under it.
 
-## 7. Health (optional)
+## 7. Logs go to stdout/stderr
 
-- If you expose `GET /healthz` → `200`, the platform uses it; otherwise it TCP-checks `:8080`.
+- Write logs to **standard output and standard error** (`console.log`, `print`, your logger's console transport). Those two streams are the ONLY thing the platform reads: the Logs view in the panel, the platform agent, and the diagnosis of a container that died on boot.
+- Do NOT log to files inside the container. Nobody can read them, and the disk is wiped on every deploy.
+
+## 8. Health
+
+- The platform checks that your server **accepts TCP connections on `:8080`**. No health endpoint is required, and none is called.
 
 ## Pre-deploy checklist
 
@@ -57,3 +62,4 @@ Everything the platform needs to build and run your app — for ANY language or 
 - [ ] Persistent data lives in the database — nothing important written to local files/SQLite (disk is wiped on every deploy).
 - [ ] No secrets committed; every `META_*` used server-side only.
 - [ ] No routes under `/__meta/*`.
+- [ ] Logs go to stdout/stderr, not to files.

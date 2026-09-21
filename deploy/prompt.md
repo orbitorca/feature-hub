@@ -38,4 +38,7 @@ This app deploys as ONE Docker container on a hosting platform. Make it comply:
 
 - The `/__meta/*` path prefix on your domain is reserved by the platform — do not add
   routes under it.
+
+- Log to stdout/stderr (console.log / print), never to files: those two streams are the
+  only place the platform reads your app's logs from.
 ```
