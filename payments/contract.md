@@ -108,6 +108,10 @@ Stripe billing portal for a subscriber to change card / cancel (hosted on the ow
 - **Paywall = a server-side guard.** Before serving a paid feature, call `GET /paid` with the
   logged-in buyer's id; render/allow only when `paid == true`. In a web framework this is a
   middleware/decorator on the protected route.
+- **No answer = no access.** If `GET /paid` times out, fails or returns 5xx, treat the buyer as
+  NOT paid. A failed check never grants access. Paid access therefore depends on this API being
+  reachable, so the app must have a fallback for that moment: a clear "we can't confirm your
+  access right now, try again in a moment" screen with a retry, not a crash or a blank page.
 - **Consumables = drain `GET /purchases` with the insert-if-new table above.** Never credit
   from a checkout redirect or a client call — only from the server-side feed.
 - **Buy button → `/checkout` → redirect.** Never render Stripe Elements or collect card data.
@@ -131,6 +135,8 @@ Same query as `/paid`, but a richer read for showing status text — never for g
 - Use it only to render a banner ("renews on …", "payment failed"). The gate is always `/paid`.
 
 ## Changelog
+- 2026-09-21 — `GET /paid`: a failed or unanswered check means NOT paid; the app shows a retry
+  screen instead of granting access.
 - _unreleased_ — `GET /products`, `POST /checkout` (one-off + subscription,
   Idempotency-Key, B2B), `GET /paid` (durable gate), `GET /purchases` (consumables ledger,
   exactly-once via a caller-side insert-if-new table), `POST /portal`, `GET /entitlement`

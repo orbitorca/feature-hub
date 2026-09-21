@@ -44,6 +44,10 @@ A) DURABLE access — a subscription/plan, or a one-off product they then own.
    withhold it on the server until /paid is true. We compute expiry/renewal/cancellation
    for you (a lapsed/cancelled/past-due subscription returns paid=false); never track time
    yourself.
+   If /paid cannot be reached or answers with an error (timeout, 5xx), treat it as paid=false:
+   a failed check NEVER grants access. Paid access depends on this API being up, so build a
+   fallback for that moment — a clear "we can't confirm your access right now, try again in a
+   moment" screen with a retry — and tell the app owner about this dependency.
    Right after the buyer returns from checkout, /paid may still be false for a moment — the
    payment is confirmed by a webhook (the source of truth), which can land a beat after the
    redirect. Don't show a hard "locked / access denied" on return; poll /paid briefly (a few
