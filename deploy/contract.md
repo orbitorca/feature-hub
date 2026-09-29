@@ -52,6 +52,19 @@ Everything the platform needs to build and run your app — for ANY language or 
 
 - The platform checks that your server **accepts TCP connections on `:8080`**. No health endpoint is required, and none is called.
 
+## 9. Image size
+
+- The built image may take at most **15.00 GB unpacked (15000000000 bytes)**: the sum of every layer after decompression, which is what it takes on disk. An image of exactly 15000000000 bytes passes; one byte more is refused before it is stored, and the build error says the size and the limit in bytes.
+- `docker images` shows a different number depending on the Docker version (with the newer image store it includes a compressed copy), so do not compare it with the limit. Check with the script instead, in the project root:
+
+  ```
+  curl -fsSL https://raw.githubusercontent.com/orbitorca/feature-hub/main/deploy/check-image-size.sh | sh
+  ```
+
+  It builds the image for `linux/amd64` the way the platform does and prints `OK` or `TOO LARGE` with both numbers in bytes. A base image that moved since can shift the result by a few MB, so keep a margin.
+- To stay small: a `.dockerignore` that leaves out `.git`, `node_modules`, build output, tests and media; a multi-stage build that copies only what runs into a slim final stage; production dependencies only; no datasets or model weights baked in.
+- A build that writes an extreme amount to disk while it runs is stopped too, with the limit in the error.
+
 ## Pre-deploy checklist
 
 - [ ] `Dockerfile` in root; `FROM` + `CMD` starting a long-lived HTTP server.
@@ -63,3 +76,4 @@ Everything the platform needs to build and run your app — for ANY language or 
 - [ ] No secrets committed; every `META_*` used server-side only.
 - [ ] No routes under `/__meta/*`.
 - [ ] Logs go to stdout/stderr, not to files.
+- [ ] The image is at most 15000000000 bytes unpacked: `check-image-size.sh` prints OK.
