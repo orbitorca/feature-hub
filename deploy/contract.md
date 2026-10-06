@@ -54,7 +54,7 @@ Everything the platform needs to build and run your app — for ANY language or 
 
 ## 9. Image size
 
-- The built image may take at most **15.00 GB unpacked (15000000000 bytes)**: the sum of every layer after decompression, which is what it takes on disk. An image of exactly 15000000000 bytes passes; one byte more is refused before it is stored, and the build error says the size and the limit in bytes.
+- The built image may take at most **5.00 GB unpacked (5000000000 bytes)**: the sum of every layer after decompression, which is what it takes on disk. An image of exactly 5000000000 bytes passes; one byte more is refused before it is stored, and the build error says the size and the limit in bytes.
 - `docker images` shows a different number depending on the Docker version (with the newer image store it includes a compressed copy), so do not compare it with the limit. Check with the script instead, in the project root:
 
   ```
@@ -76,4 +76,4 @@ Everything the platform needs to build and run your app — for ANY language or 
 - [ ] No secrets committed; every `META_*` used server-side only.
 - [ ] No routes under `/__meta/*`.
 - [ ] Logs go to stdout/stderr, not to files.
-- [ ] The image is at most 15000000000 bytes unpacked: `check-image-size.sh` prints OK.
+- [ ] The image is at most 5000000000 bytes unpacked: `check-image-size.sh` prints OK.

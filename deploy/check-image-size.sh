@@ -10,7 +10,7 @@
 set -eu
 
 # Keep in step with the platform's limit (contracts IMAGE_SIZE_LIMIT_BYTES).
-LIMIT_BYTES=15000000000
+LIMIT_BYTES=5000000000
 BUILDER=orbitorca-size-check
 
 gb() { awk -v b="$1" -v up="$2" 'BEGIN {
