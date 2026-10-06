@@ -11,7 +11,7 @@ capability works, and auth/payments are server-only (a static/SPA app needs a ba
 
 ## Capabilities
 
-- [Deploy compatibility](deploy/contract.md): the rules an app must meet so the platform can build and run it — Dockerfile at root, long-lived server on `0.0.0.0:$PORT`, config from env, `DATABASE_URL` for the managed database, image at most 15000000000 bytes unpacked (check with `deploy/check-image-size.sh`). [prompt](deploy/prompt.md)
+- [Deploy compatibility](deploy/contract.md): the rules an app must meet so the platform can build and run it — Dockerfile at root, long-lived server on `0.0.0.0:$PORT`, config from env, `DATABASE_URL` for the managed database, image at most 5000000000 bytes unpacked (check with `deploy/check-image-size.sh`). [prompt](deploy/prompt.md)
 - [Payments](payments/contract.md): sell one-time products and subscriptions; the platform brokers Stripe, holds the keys and webhooks, and owns the "paid" state — the app only calls `GET /paid`, `GET /products`, `POST /checkout`, `POST /portal`. [prompt](payments/prompt.md)
 - [User accounts / auth](auth/contract.md): sign up, log in, password reset; the platform runs the auth service inside the app's own container group — the app calls `POST /signup`, `POST /token`, `POST /recover`, `GET /user`. [prompt](auth/prompt.md)
 
