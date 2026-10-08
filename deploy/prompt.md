@@ -42,6 +42,11 @@ This app deploys as ONE Docker container on a hosting platform. Make it comply:
 - Log to stdout/stderr (console.log / print), never to files: those two streams are the
   only place the platform reads your app's logs from.
 
+- Environment variables exist at RUN time only: the image is built without any of them.
+  Nothing may need a key, a database or an external service while the image builds
+  (e.g. `next build` evaluating a module that creates a Stripe client at the top level):
+  create clients lazily inside handlers, or mark such pages dynamic.
+
 - Every HTML page MUST be a full document with <html>, <head> and <body>: the platform
   inserts its scripts (traffic analytics) right before </head>, so a page served without
   one gets nothing and is not counted.

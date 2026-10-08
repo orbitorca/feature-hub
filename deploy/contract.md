@@ -19,6 +19,7 @@ Everything the platform needs to build and run your app — for ANY language or 
 - Read all config from **environment variables**. Never hardcode or commit secrets.
 - The platform injects and **locks** these (you cannot set them): `PORT` (always 8080), `DATABASE_URL` (if your app has a database), and anything starting with `META_` (feature brokers). Your OWN keys (e.g. an LLM API key) are added in the app's Env-vars panel and arrive as env vars too.
 - Any `META_*` value is a **platform secret** — use it only in server-side code, never expose it to the browser.
+- **Env vars exist at RUN time only.** The image is built without any of them (no `--build-arg`, no owner keys): a build step that instantiates an SDK or opens a database connection fails (Next.js `next build` collecting static pages with a Stripe client at module top level, a `prisma generate` that needs `DATABASE_URL`). Initialise clients lazily, inside request handlers, or mark such pages dynamic; never read a key at import time.
 
 ## 4. Database (only if your app stores data)
 
@@ -82,3 +83,9 @@ Everything the platform needs to build and run your app — for ANY language or 
 - [ ] Logs go to stdout/stderr, not to files.
 - [ ] The image is at most 5000000000 bytes unpacked: `check-image-size.sh` prints OK.
 - [ ] Every HTML page is a full document with a `</head>` (analytics is inserted there).
+- [ ] Nothing in the Dockerfile's build steps needs a key, a database or an external service (env vars exist at run time only).
+
+## Changelog
+- 2026-10-08 — section 3: env vars exist at run time only, the build sees none of them.
+- 2026-10-07 — section 10: HTML pages need a `</head>`; platform features are inserted there, a page without one gets no analytics.
+- 2026-10-06 — section 9: image size limit 5 GB (was 15 GB), `check-image-size.sh`.
