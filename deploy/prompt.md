@@ -42,6 +42,10 @@ This app deploys as ONE Docker container on a hosting platform. Make it comply:
 - Log to stdout/stderr (console.log / print), never to files: those two streams are the
   only place the platform reads your app's logs from.
 
+- Every HTML page MUST be a full document with <html>, <head> and <body>: the platform
+  inserts its scripts (traffic analytics) right before </head>, so a page served without
+  one gets nothing and is not counted.
+
 - The image may take at most 5000000000 bytes (5.00 GB) UNPACKED. Keep it small: a
   .dockerignore without .git/node_modules/build output/media, a multi-stage build that
   copies only what runs, production dependencies only. Do NOT judge the size by

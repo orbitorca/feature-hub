@@ -129,12 +129,20 @@ Common: `ACCOUNT_NOT_READY` (owner hasn't finished Stripe onboarding), `PRICE_NO
 `PRODUCT_NOT_FOUND`, `NO_BILLING_CUSTOMER` (/portal for a non-subscriber). A bad/expired
 `META_APP_TOKEN` returns **401 Unauthorized**.
 
+When the owner turns payments off in the dashboard, the token stops working at once: every call
+answers **401** until the next deploy, which also drops `META_API_URL` and `META_APP_TOKEN` from
+the environment. The app treats that as NOT paid (the retry screen), exactly like a failed check.
+Nothing is deleted on the Stripe side; turning payments back on issues a fresh token on the next
+deploy.
+
 ## GET /entitlement (optional, display-only)
 Same query as `/paid`, but a richer read for showing status text — never for gating.
 - Response: `{ "status": "active"|"canceled"|"past_due"|"expired"|null, "kind": …, "tier": …, "currentPeriodEnd": … }`
 - Use it only to render a banner ("renews on …", "payment failed"). The gate is always `/paid`.
 
 ## Changelog
+- 2026-10-07 — what the app sees once the owner turns payments off (401 on every call, variables
+  gone on the next deploy).
 - 2026-09-21 — `GET /paid`: a failed or unanswered check means NOT paid; the app shows a retry
   screen instead of granting access.
 - _unreleased_ — `GET /products`, `POST /checkout` (one-off + subscription,

@@ -12,6 +12,10 @@ You have a managed Auth service for this app's end-users.
 Two base URLs — do NOT hardcode either:
   - from SERVER code:  $META_AUTH_URL   (injected env var)
   - from the BROWSER:  /__meta/auth     (relative, on this app's own domain)
+The owner can turn the feature off at any time: after the next deploy $META_AUTH_URL is not
+set and /__meta/auth answers like any other path of the app. The app MUST still start and
+serve without it (read the variable lazily, never require it at boot) and treat that like
+"nobody is signed in". The users are kept and come back when the feature is turned on again.
 Do NOT hash passwords, do NOT create a users table, do NOT sign or verify JWTs yourself.
 
 - Register:

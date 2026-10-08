@@ -170,7 +170,17 @@ Enabling the feature can fail from the dashboard with
 declared no database), `DATABASE_NOT_READY` (deploy the app once first), `NOT_AVAILABLE`
 (the platform environment has no auth image configured).
 
+## When the owner turns the feature off
+The owner can turn user accounts off in the dashboard at any time. The running version keeps
+signing users in until the next deploy; from that deploy on, the auth service is gone:
+`META_AUTH_URL` is no longer set, and `/__meta/auth/*` is no longer routed to the auth service
+(such a request reaches your app like any other path). Treat that like any failure: nobody is
+signed in. The users are not deleted; they stay in the app's database, and turning the feature
+back on brings them back.
+
 ## Changelog
+- 2026-10-07: what the app sees once the owner turns the feature off (section above); the
+  users are kept.
 - 2026-09-18: passwords known from data leaks are no longer refused; `reasons` is `length` and/or
   `characters`.
 - 2026-09-15: password rules: at least 8 characters with a lowercase letter, an uppercase

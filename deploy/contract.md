@@ -65,6 +65,10 @@ Everything the platform needs to build and run your app — for ANY language or 
 - To stay small: a `.dockerignore` that leaves out `.git`, `node_modules`, build output, tests and media; a multi-stage build that copies only what runs into a slim final stage; production dependencies only; no datasets or model weights baked in.
 - A build that writes an extreme amount to disk while it runs is stopped too, with the limit in the error.
 
+## 10. HTML pages need a `<head>`
+
+- Platform features that add something to your pages (traffic analytics today) do it by inserting a `<script>` right before the first **`</head>`** of every `text/html` response. A page served without a `<head>` element, for example a bare `<h1>…</h1>` string or a fragment, gets nothing added, so analytics counts nothing for it. Serve full documents: `<!doctype html><html><head>…</head><body>…</body></html>`.
+
 ## Pre-deploy checklist
 
 - [ ] `Dockerfile` in root; `FROM` + `CMD` starting a long-lived HTTP server.
@@ -77,3 +81,4 @@ Everything the platform needs to build and run your app — for ANY language or 
 - [ ] No routes under `/__meta/*`.
 - [ ] Logs go to stdout/stderr, not to files.
 - [ ] The image is at most 5000000000 bytes unpacked: `check-image-size.sh` prints OK.
+- [ ] Every HTML page is a full document with a `</head>` (analytics is inserted there).

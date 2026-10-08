@@ -12,6 +12,10 @@ client JS, or in any response. Every call below runs on YOUR SERVER — if this 
 static/SPA-only, add a small backend for them first (see ../deploy/contract.md).
 Do NOT integrate Stripe directly, do NOT store card data, do NOT build webhooks —
 the platform handles all of that.
+The owner can turn payments off at any time: then every call answers 401 and, after the
+next deploy, $META_API_URL and $META_APP_TOKEN are not set at all. The app MUST still start
+and serve without them (read them lazily, never require them at boot) and treat a missing
+variable or a 401 as "not paid".
 
 - See what's for sale (the owner configures products/prices dynamically):
     GET $META_API_URL/products
