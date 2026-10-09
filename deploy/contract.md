@@ -51,7 +51,7 @@ Everything the platform needs to build and run your app — for ANY language or 
 
 ## 8. Health
 
-- The platform checks that your server **accepts TCP connections on `:8080`**. No health endpoint is required, and none is called.
+- Every 10 seconds the platform sends your server `GET /__meta/health` on `:8080` (you will see it in your logs). **Any answer counts as healthy**, a 404 or 500 included; only a closed port fails. No health endpoint is required.
 
 ## 9. Image size
 
@@ -86,6 +86,7 @@ Everything the platform needs to build and run your app — for ANY language or 
 - [ ] Nothing in the Dockerfile's build steps needs a key, a database or an external service (env vars exist at run time only).
 
 ## Changelog
+- 2026-10-09 — section 8: health is a `GET /__meta/health` request; any answer counts, only a closed port fails.
 - 2026-10-08 — section 3: env vars exist at run time only, the build sees none of them.
 - 2026-10-07 — section 10: HTML pages need a `</head>`; platform features are inserted there, a page without one gets no analytics.
 - 2026-10-06 — section 9: image size limit 5 GB (was 15 GB), `check-image-size.sh`.
