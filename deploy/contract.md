@@ -5,7 +5,7 @@ Everything the platform needs to build and run your app — for ANY language or 
 ## 1. What the platform runs
 
 - Your repo (or zip) must have a **`Dockerfile` in the root**, starting `FROM <base-image>`, with a `CMD`/`ENTRYPOINT` that starts a **long-lived HTTP server**.
-- The platform builds the image and runs ONE container with `PORT=8080`. Your server MUST **listen on `0.0.0.0` and `process.env.PORT`** (i.e. `0.0.0.0:8080`). Listening on `127.0.0.1`/`localhost` = unreachable → the deploy fails its health check. `EXPOSE` is irrelevant.
+- The platform builds the image and runs ONE container with `PORT=8080`. Your server MUST **listen on `0.0.0.0` and `process.env.PORT`** (i.e. `0.0.0.0:8080`). Listening on `127.0.0.1`/`localhost` = unreachable → the deploy fails its health check. `EXPOSE` is irrelevant. The readiness scan refuses to build an app whose start command or server line pins another port or binds localhost, and warns about a development server (`next dev`, bare `vite`, `nodemon`, `--reload`) in the start command.
 - The process must **stay running**. A container whose main process exits — a one-shot script, or a server that throws on boot — is a deploy failure. If your startup code can fail (e.g. a database call), it will **crash-loop**, not "deploy anyway": fix the cause.
 - **Install dependencies with a PLAIN install, not a frozen one.** Use `npm install` (or `pnpm install` / `yarn install`) in the Dockerfile — it resolves dependencies without needing a committed lockfile. Use a FROZEN/clean install (`npm ci`, `pnpm install --frozen-lockfile`, `yarn --frozen-lockfile`, `pip … --require-hashes`) **only** when you ACTUALLY generated the lockfile by running a real install and committed it. **NEVER hand-write a lockfile** — a fabricated one fails `npm ci` with cryptic `ETARGET`/integrity errors (and `npm ci` doesn't accept `--frozen-lockfile`, that's a pnpm/yarn flag). When unsure, `npm install` is the safe default.
 
@@ -19,7 +19,7 @@ Everything the platform needs to build and run your app — for ANY language or 
 - Read all config from **environment variables**. Never hardcode or commit secrets.
 - The platform injects and **locks** these (you cannot set them): `PORT` (always 8080), `DATABASE_URL` (while your app has a database of ours; an app without one may set its own, e.g. Supabase or Neon), and anything starting with `META_` (feature brokers). Your OWN keys (e.g. an LLM API key) are added in the app's Env-vars panel and arrive as env vars too.
 - Any `META_*` value is a **platform secret** — use it only in server-side code, never expose it to the browser.
-- **Env vars exist at RUN time only.** The image is built without any of them (no `--build-arg`, no owner keys): a build step that instantiates an SDK or opens a database connection fails (Next.js `next build` collecting static pages with a Stripe client at module top level, a `prisma generate` that needs `DATABASE_URL`). Initialise clients lazily, inside request handlers, or mark such pages dynamic; never read a key at import time.
+- **Env vars exist at RUN time only.** The image is built without any of them (no `--build-arg`, no owner keys): a build step that instantiates an SDK or opens a database connection fails (Next.js `next build` collecting static pages with a Stripe client at module top level, a `prisma generate` that needs `DATABASE_URL`). Initialise clients lazily, inside request handlers, or mark such pages dynamic; never read a key at import time. Run database migrations when the container starts (`CMD npx prisma migrate deploy && npm start`), never in a `RUN` step; the scan warns about one there.
 
 ## 4. Database (only if your app stores data)
 
@@ -51,7 +51,7 @@ Everything the platform needs to build and run your app — for ANY language or 
 
 ## 8. Health
 
-- Every 10 seconds the platform sends your server `GET /__meta/health` on `:8080` (you will see it in your logs). **Any answer counts as healthy**, a 404 or 500 included; only a closed port fails. No health endpoint is required.
+- Every 10 seconds the platform sends your server `GET /__meta/health` on `:8080` (the platform leaves these requests out of the logs it shows you). **Any answer counts as healthy**, a 404 or 500 included; only a closed port fails. No health endpoint is required.
 
 ## 9. Image size
 
@@ -86,6 +86,7 @@ Everything the platform needs to build and run your app — for ANY language or 
 - [ ] Nothing in the Dockerfile's build steps needs a key, a database or an external service (env vars exist at run time only).
 
 ## Changelog
+- 2026-10-12 — sections 1 and 3: the readiness scan checks the port and host the app listens on (block), a development server in the start command and a migration in a `RUN` step (warn). Section 8: health requests are left out of the logs the platform shows.
 - 2026-10-12 — section 3: `DATABASE_URL` is settable by the owner while the app has no database of ours.
 - 2026-10-09 — section 8: health is a `GET /__meta/health` request; any answer counts, only a closed port fails.
 - 2026-10-08 — section 3: env vars exist at run time only, the build sees none of them.
