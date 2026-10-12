@@ -69,7 +69,8 @@ Do NOT hash passwords, do NOT create a users table, do NOT sign or verify JWTs y
 
 Reserved by the platform: the `/__meta/*` path prefix on this app's domain, the `auth`
 schema in this app's database (you get SELECT on it — keep your own tables in `public`),
-and the env vars PORT, DATABASE_URL and anything starting with META_.
+and the env vars PORT, DATABASE_URL (this app has a platform database) and anything starting
+with META_.
 
 Verify before finishing:
   1. POST /signup with a new address -> 200, and an email arrives.

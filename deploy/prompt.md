@@ -14,7 +14,8 @@ This app deploys as ONE Docker container on a hosting platform. Make it comply:
   really generated + committed the lockfile. NEVER hand-write a lockfile (a fake one fails
   npm ci with ETARGET/integrity errors). Unsure → npm install.
 - Read all config from environment variables; never hardcode or commit secrets. The
-  platform injects and locks PORT, DATABASE_URL, and any META_* var. Anything named META_*
+  platform injects and locks PORT and any META_* var, and DATABASE_URL while the app has a
+  platform database (without one, the owner sets the URL of the database the app uses). Anything named META_*
   is a SECRET — use it only in server-side code, never in the browser.
 
 - Is this a static/SPA site with no server? Auth and Payments are SERVER-ONLY (they use a

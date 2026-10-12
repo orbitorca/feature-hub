@@ -39,7 +39,8 @@ the app's own database.
 - Platform errors are HTTP 4xx/5xx with
   `{ "error": { "code": "APP_ERROR.<DOMAIN>.<CODE>", "message": "…" } }`.
 - **Reserved by the platform, in every app:** the `/__meta/*` path prefix on the app's
-  domain, and the env vars `PORT`, `DATABASE_URL` and anything starting with `META_`.
+  domain, and the env vars `PORT`, anything starting with `META_`, and `DATABASE_URL` while the
+  app has a platform database (an app without one may set its own, e.g. Supabase or Neon).
 
 ## Structure
 - One subfolder per feature: `prompt.md` (paste/inject into the agent) + `contract.md`
