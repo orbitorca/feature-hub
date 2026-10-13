@@ -3,7 +3,8 @@
 # it: every layer of the built image after decompression (what it takes on disk). `docker images`
 # shows a different number depending on the Docker version, so it is not used here.
 #
-# Run in the project root, next to the Dockerfile:
+# Run in the project root, next to the Dockerfile (an app the platform builds without one has no
+# image to measure here; the platform measures it at build time):
 #   curl -fsSL https://raw.githubusercontent.com/orbitorca/feature-hub/main/deploy/check-image-size.sh | sh
 #
 # Needs Docker with buildx. Prints OK or TOO LARGE with both numbers in bytes; exits 1 when too large.

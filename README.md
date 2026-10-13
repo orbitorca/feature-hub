@@ -50,7 +50,7 @@ the app's own database.
 - `_template/` — copy it to start a new feature.
 
 ## Features
-- [`deploy/`](deploy/) — **read first.** Make any app deployable: Dockerfile, `0.0.0.0:$PORT`, static-vs-server decision, env/secrets, database rules.
+- [`deploy/`](deploy/) — **read first.** Make any app deployable: build (automatic for common stacks, or your Dockerfile), `0.0.0.0:$PORT`, static-vs-server decision, env/secrets, database rules.
 - [`payments/`](payments/) — sell one-off + subscriptions, gate paid features,
   B2B invoices (NIP/VAT). Brokered: Stripe Connect.
 - [`auth/`](auth/) — end-user accounts, login, password reset, email change. Edge: runs

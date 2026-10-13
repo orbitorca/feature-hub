@@ -4,10 +4,10 @@ Everything the platform needs to build and run your app — for ANY language or 
 
 ## 1. What the platform runs
 
-- Your repo (or zip) must have a **`Dockerfile` in the root**, starting `FROM <base-image>`, with a `CMD`/`ENTRYPOINT` that starts a **long-lived HTTP server**.
+- A **`Dockerfile` in the root is optional for common stacks**: Node (Next.js, Vite, Express and other `package.json` projects), Python, Go, Ruby, PHP, Java, and static sites with an `index.html` at the top. Without one the platform builds the app from what the project declares (the `build` script runs at build time, the `start` script starts the server; the readiness scan says what it will do). A `Dockerfile`, when present, **always wins**: it starts `FROM <base-image>` and has a `CMD`/`ENTRYPOINT` that starts a **long-lived HTTP server**. A file named differently or kept in a subfolder (`Dockerfile.txt`, `app/Dockerfile`) is treated as your recipe and blocks the deploy until it is renamed or moved; a stack the platform cannot recognise blocks with a request for a `Dockerfile`.
 - The platform builds the image and runs ONE container with `PORT=8080`. Your server MUST **listen on `0.0.0.0` and `process.env.PORT`** (i.e. `0.0.0.0:8080`). Listening on `127.0.0.1`/`localhost` = unreachable → the deploy fails its health check. `EXPOSE` is irrelevant. The readiness scan refuses to build an app whose start command or server line pins another port or binds localhost, and warns about a development server (`next dev`, bare `vite`, `nodemon`, `--reload`) in the start command.
 - The process must **stay running**. A container whose main process exits — a one-shot script, or a server that throws on boot — is a deploy failure. If your startup code can fail (e.g. a database call), it will **crash-loop**, not "deploy anyway": fix the cause.
-- **Install dependencies with a PLAIN install, not a frozen one.** Use `npm install` (or `pnpm install` / `yarn install`) in the Dockerfile — it resolves dependencies without needing a committed lockfile. Use a FROZEN/clean install (`npm ci`, `pnpm install --frozen-lockfile`, `yarn --frozen-lockfile`, `pip … --require-hashes`) **only** when you ACTUALLY generated the lockfile by running a real install and committed it. **NEVER hand-write a lockfile** — a fabricated one fails `npm ci` with cryptic `ETARGET`/integrity errors (and `npm ci` doesn't accept `--frozen-lockfile`, that's a pnpm/yarn flag). When unsure, `npm install` is the safe default.
+- **Install dependencies with a PLAIN install, not a frozen one** when you write the Dockerfile yourself. Use `npm install` (or `pnpm install` / `yarn install`) in the Dockerfile — it resolves dependencies without needing a committed lockfile. Use a FROZEN/clean install (`npm ci`, `pnpm install --frozen-lockfile`, `yarn --frozen-lockfile`, `pip … --require-hashes`) **only** when you ACTUALLY generated the lockfile by running a real install and committed it. **NEVER hand-write a lockfile** — a fabricated one fails `npm ci` with cryptic `ETARGET`/integrity errors (and `npm ci` doesn't accept `--frozen-lockfile`, that's a pnpm/yarn flag). When unsure, `npm install` is the safe default.
 
 ## 2. Static app vs. server app — pick correctly
 
@@ -19,7 +19,7 @@ Everything the platform needs to build and run your app — for ANY language or 
 - Read all config from **environment variables**. Never hardcode or commit secrets.
 - The platform injects and **locks** these (you cannot set them): `PORT` (always 8080), `DATABASE_URL` (while your app has a database of ours; an app without one may set its own, e.g. Supabase or Neon), and anything starting with `META_` (feature brokers). Your OWN keys (e.g. an LLM API key) are added in the app's Env-vars panel and arrive as env vars too.
 - Any `META_*` value is a **platform secret** — use it only in server-side code, never expose it to the browser.
-- **Env vars exist at RUN time only.** The image is built without any of them (no `--build-arg`, no owner keys): a build step that instantiates an SDK or opens a database connection fails (Next.js `next build` collecting static pages with a Stripe client at module top level, a `prisma generate` that needs `DATABASE_URL`). Initialise clients lazily, inside request handlers, or mark such pages dynamic; never read a key at import time. Run database migrations when the container starts (`CMD npx prisma migrate deploy && npm start`), never in a `RUN` step; the scan warns about one there.
+- **Env vars exist at RUN time only.** The image is built without any of them (no `--build-arg`, no owner keys): a build step that instantiates an SDK or opens a database connection fails (Next.js `next build` collecting static pages with a Stripe client at module top level, a `prisma generate` that needs `DATABASE_URL`). Initialise clients lazily, inside request handlers, or mark such pages dynamic; never read a key at import time. Run database migrations when the server starts (in the `start` script, `prisma migrate deploy && next start`, or in the Dockerfile `CMD`), never at build time (a `build` script, a `RUN` step); the scan warns about one there.
 
 ## 4. Database (only if your app stores data)
 
@@ -72,7 +72,7 @@ Everything the platform needs to build and run your app — for ANY language or 
 
 ## Pre-deploy checklist
 
-- [ ] `Dockerfile` in root; `FROM` + `CMD` starting a long-lived HTTP server.
+- [ ] A common stack the platform builds on its own (Node, Python, Go, Ruby, PHP, Java, static site with `index.html`), or a `Dockerfile` in root with `FROM` + `CMD` starting a long-lived HTTP server.
 - [ ] Deps installed with a plain `npm install` (not `npm ci`) — unless you truly generated + committed a real lockfile.
 - [ ] Listens on `0.0.0.0` and `process.env.PORT` (8080).
 - [ ] Using auth or payments? → the app HAS a server, and those calls run server-side.
@@ -83,9 +83,10 @@ Everything the platform needs to build and run your app — for ANY language or 
 - [ ] Logs go to stdout/stderr, not to files.
 - [ ] The image is at most 5000000000 bytes unpacked: `check-image-size.sh` prints OK.
 - [ ] Every HTML page is a full document with a `</head>` (analytics is inserted there).
-- [ ] Nothing in the Dockerfile's build steps needs a key, a database or an external service (env vars exist at run time only).
+- [ ] Nothing in the build (the `build` script or the Dockerfile's build steps) needs a key, a database or an external service (env vars exist at run time only).
 
 ## Changelog
+- 2026-10-13 — section 1: a `Dockerfile` is optional for common stacks; the platform builds from what the project declares, a `Dockerfile` always wins. Section 3: migrations run from the `start` script or the `CMD`, never at build time.
 - 2026-10-12 — sections 1 and 3: the readiness scan checks the port and host the app listens on (block), a development server in the start command and a migration in a `RUN` step (warn). Section 8: health requests are left out of the logs the platform shows.
 - 2026-10-12 — section 3: `DATABASE_URL` is settable by the owner while the app has no database of ours.
 - 2026-10-09 — section 8: health is a `GET /__meta/health` request; any answer counts, only a closed port fails.

@@ -5,7 +5,10 @@ Paste this into the app's coding agent BEFORE wiring any feature. It makes any a
 ```
 This app deploys as ONE Docker container on a hosting platform. Make it comply:
 
-- Put a Dockerfile in the repo root (FROM <base>, CMD starting a long-lived HTTP server).
+- A Dockerfile in the repo root is optional for common stacks (Node, Python, Go, Ruby, PHP,
+  Java, static sites with index.html): the platform builds from what the project declares
+  (the build script, then the start script as the server). Add a Dockerfile only for anything
+  else (FROM <base>, CMD starting a long-lived HTTP server); it always wins when present.
 - The server MUST listen on 0.0.0.0 and process.env.PORT (the platform sets PORT=8080).
   Never bind 127.0.0.1/localhost. The process must stay running — if it exits or throws
   on boot it crash-loops (it will NOT "deploy anyway").
