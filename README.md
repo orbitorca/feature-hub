@@ -14,6 +14,8 @@ Before wiring ANY feature, make the app deployable — read [`deploy/contract.md
 2. The platform injects the feature's env vars into the app and redeploys it.
 3. The agent reads this hub — [`deploy/`](deploy/) first, then the feature — and wires the HTTP calls.
 
+For `auth/` the order is reversed: the agent wires the calls first, the owner then turns sign-in on and deploys once, which ships the code and the auth service together. Until that deploy `/__meta/auth` answers 404.
+
 ## Two kinds of feature
 
 Features differ in **where they run**, and that changes how the app calls them.
