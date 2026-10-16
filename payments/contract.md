@@ -18,12 +18,28 @@ The app never stores payment state itself — it reads it from us. There are exa
 
 Pick by the thing you sell, not by how you built the app.
 
+## Test mode (the owner's switch, nothing in the app)
+
+The owner can run payments in **test mode**: checkout opens Stripe's test checkout, only
+Stripe's test cards work (`4242 4242 4242 4242`, any future date, any CVC), nobody is charged,
+and the platform draws a "Test payments" bar on every page of the app. Everything below works
+the same: the same endpoints, the same product and price keys, the same `/paid` answers for a
+test buyer. The owner switches to live payments in the dashboard (or their agent does); at
+that moment test purchases stop counting, and `/paid` answers for the live account.
+
+- `GET /products` says which mode the app is in (`"mode": "test"|"live"`). It is **display
+  only**: show a "test mode" hint on your pricing page if you like.
+- **Never condition the paywall, the checkout or the crediting on `mode`.** The paid state is
+  always what `/paid` and `/purchases` say; an app with a `mode === 'test'` branch breaks the
+  day the owner goes live.
+
 ## GET /products
 The catalog the owner configured — call this to render pricing **dynamically**; the app
-never hardcodes prices. Returns active products, each with its prices.
+never hardcodes prices. Returns active products, each with its prices, and the payments mode.
 
-- Response: `{ "products": [ { "key": "pro", "name": "Pro", "kind": "one_time"|"subscription", "prices": [ { "key": "<price-key>", "amount": 1999, "currency": "usd", "interval": "month"|"year"|null, "trialDays": 14|null, "tier": "pro"|null } ] } ] }`
+- Response: `{ "mode": "live"|"test", "products": [ { "key": "pro", "name": "Pro", "kind": "one_time"|"subscription", "prices": [ { "key": "<price-key>", "amount": 1999, "currency": "usd", "interval": "month"|"year"|null, "trialDays": 14|null, "tier": "pro"|null } ] } ] }`
 - Use a price `key` as the `price` in `POST /checkout`. It's stable across owner edits, so it's safe to keep in your code.
+- `mode` is informational (see _Test mode_ above); the catalog is the same in both modes.
 
 ```bash
 curl -s "$META_API_URL/products" -H "Authorization: Bearer $META_APP_TOKEN"
@@ -141,6 +157,8 @@ Same query as `/paid`, but a richer read for showing status text — never for g
 - Use it only to render a banner ("renews on …", "payment failed"). The gate is always `/paid`.
 
 ## Changelog
+- 2026-10-17 — test mode: the owner can run payments on Stripe's test checkout before going
+  live; `GET /products` gains `mode` (display only). The app never branches on it.
 - 2026-10-07 — what the app sees once the owner turns payments off (401 on every call, variables
   gone on the next deploy).
 - 2026-09-21 — `GET /paid`: a failed or unanswered check means NOT paid; the app shows a retry

@@ -19,7 +19,12 @@ variable or a 401 as "not paid".
 
 - See what's for sale (the owner configures products/prices dynamically):
     GET $META_API_URL/products
-      -> { "products": [ { "key", "name", "kind", "prices": [ { "key", "amount", "currency", "interval", "tier" } ] } ] }
+      -> { "mode": "live"|"test", "products": [ { "key", "name", "kind", "prices": [ { "key", "amount", "currency", "interval", "tier" } ] } ] }
+    "mode" says whether the owner runs payments in TEST mode right now (Stripe's test checkout,
+    test cards only, nobody is charged, a "Test payments" bar drawn by the platform on every page).
+    It is for DISPLAY only (a small "test mode" hint on the pricing page at most). NEVER branch
+    the paywall, the checkout or the crediting on it: the code is identical in both modes, and
+    /paid and /purchases are the only truth about who paid.
     Build your pricing page from this; pass a price "key" as "price" in /checkout below.
     Read products LIVE from /products, on EVERY purchase path (one-off buttons AND the
     subscribe button alike) — the owner can add or remove products/prices at any time. The
