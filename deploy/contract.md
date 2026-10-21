@@ -51,7 +51,7 @@ Everything the platform needs to build and run your app — for ANY language or 
 
 ## 8. Health
 
-- Every 10 seconds the platform sends your server `GET /__meta/health` on `:8080` (the platform leaves these requests out of the logs it shows you). **Any answer counts as healthy**, a 404 or 500 included; only a closed port fails. No health endpoint is required.
+- The platform sends your server `GET /__meta/health` on `:8080` (the platform leaves these requests out of the logs it shows you). **Any answer counts as healthy**, a 404 or 500 included; only a closed port fails. No health endpoint is required.
 
 ## 9. Image size
 
