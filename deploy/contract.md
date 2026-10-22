@@ -39,6 +39,7 @@ Everything the platform needs to build and run your app — for ANY language or 
 - The container filesystem is **scratch space**: every deploy/restart starts from a clean image, and anything written locally is gone. This is by design — the app is **stateless**.
 - Anything that must survive goes in your **database** (`DATABASE_URL`): user uploads, application state, records. Do NOT keep data in local files or SQLite — it silently disappears on the next deploy.
 - Writing to `/tmp`/caches during the process's life is fine; just never treat the disk as storage.
+- One request to your app (a form post, a file upload) carries at most **25 MB**. A bigger one is refused with `413` before your app sees it, so send larger files from the browser straight to an external object store.
 
 ## 6. Reserved
 
@@ -86,6 +87,7 @@ Everything the platform needs to build and run your app — for ANY language or 
 - [ ] Nothing in the build (the `build` script or the Dockerfile's build steps) needs a key, a database or an external service (env vars exist at run time only).
 
 ## Changelog
+- 2026-10-22 — section 5: a request to the app carries at most 25 MB; a bigger one gets `413` before the app sees it.
 - 2026-10-13 — section 1: a `Dockerfile` is optional for common stacks; the platform builds from what the project declares, a `Dockerfile` always wins. Section 3: migrations run from the `start` script or the `CMD`, never at build time.
 - 2026-10-12 — sections 1 and 3: the readiness scan checks the port and host the app listens on (block), a development server in the start command and a migration in a `RUN` step (warn). Section 8: health requests are left out of the logs the platform shows.
 - 2026-10-12 — section 3: `DATABASE_URL` is settable by the owner while the app has no database of ours.

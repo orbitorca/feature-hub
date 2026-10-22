@@ -40,6 +40,10 @@ This app deploys as ONE Docker container on a hosting platform. Make it comply:
   no user uploads, SQLite or data files on disk. /tmp scratch during a process's life is
   fine.
 
+- One request to the app (form post, file upload) carries at most 25 MB; a bigger one is
+  refused with 413 before the app sees it. Send larger files from the browser straight to
+  an external object store.
+
 - The `/__meta/*` path prefix on your domain is reserved by the platform — do not add
   routes under it.
 
